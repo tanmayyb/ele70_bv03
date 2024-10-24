@@ -38,6 +38,9 @@ def load_ieso_dataset( first_year:int, last_year:int, join:bool=False) -> dict|p
       url = url_prefix+str(year)+url_suffix
       df = pd.read_csv(url, header=3) # returns record
 
+      # add datetime
+      df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
+
       if not join:
         dataset[year] = df
       else:
