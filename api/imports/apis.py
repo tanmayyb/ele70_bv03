@@ -22,8 +22,14 @@ def load_ieso_dataset( first_year:int, last_year:int, join:bool=False) -> dict|p
 
   if first_year == last_year:
     # only for 1 year
+
     url = url_prefix+str(first_year)+url_suffix
-    return pd.read_csv(url, header=3) # returns record
+    df = pd.read_csv(url, header=3) # returns record
+    # add datetime
+    df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
+
+    return df
+
   else:
     # multiple years
     # decide dataset data type based on
@@ -35,9 +41,9 @@ def load_ieso_dataset( first_year:int, last_year:int, join:bool=False) -> dict|p
 
     # multiple year data
     for year in range(first_year, last_year+1):
+
       url = url_prefix+str(year)+url_suffix
       df = pd.read_csv(url, header=3) # returns record
-
       # add datetime
       df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
 
@@ -66,16 +72,22 @@ def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, jo
   url_prefix = 'https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv'
   timeframe = 1
 
+  # add 1 year data
   if num_years<=0:
     tmp = []
     for month in range(1, 12+1):
       url = url_prefix+f'&time=UTC&stationID={station_id}&Year={first_year}&Month={month}&timeframe={timeframe}&submit=Data'
-      tmp.append(pd.read_csv(url))
-    df = pd.concat(tmp)
+      df = pd.read_csv(url)      
+      tmp.append(df)
+    df = pd.concat(tmp) # concat 12 months to 1 year df
+
+    # add datetime
+    df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
+
     return df
 
+  # add multiple year data
   else:
-    # data = dict()
     if not join:
       data = dict()
     else:
@@ -86,8 +98,12 @@ def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, jo
       for month in range(1, 12+1):
         url = url_prefix+f'&time=UTC&stationID={station_id}&Year={year}&Month={month}&timeframe={timeframe}&submit=Data'
         tmp.append(pd.read_csv(url))
-      tmp = pd.concat(tmp)
+      tmp = pd.concat(tmp) # concat 12 months to 1 year df
       
+      # add datetime
+      df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
+
+      # add year data
       if not join:
         data[year] = tmp
       else:
