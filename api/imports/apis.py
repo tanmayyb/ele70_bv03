@@ -48,6 +48,8 @@ def load_ieso_dataset( first_year:int, last_year:int, join:bool=False) -> dict|p
 
     return dataset
 
+from tqdm import tqdm
+
 # Dataloader for Weather (Canada-Wide)
 def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, join:bool=False) -> dict|pd.DataFrame:
 
