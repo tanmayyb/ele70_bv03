@@ -98,14 +98,14 @@ def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, jo
       for month in range(1, 12+1):
         url = url_prefix+f'&time=UTC&stationID={station_id}&Year={year}&Month={month}&timeframe={timeframe}&submit=Data'
         tmp.append(pd.read_csv(url))
-      tmp = pd.concat(tmp) # concat 12 months to 1 year df
+      df = pd.concat(tmp) # concat 12 months to 1 year df
       
       # add datetime
-      tmp['DateTime'] = pd.to_datetime(tmp['Date/Time (UTC)'])
+      df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
 
       # add year data
       if not join:
-        data[year] = tmp
+        data[year] = df
       else:
-        data = pd.concat([data, tmp])
+        data = pd.concat([data, df])
     return data
