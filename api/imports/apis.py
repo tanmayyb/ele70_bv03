@@ -101,7 +101,7 @@ def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, jo
       tmp = pd.concat(tmp) # concat 12 months to 1 year df
       
       # add datetime
-      df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
+      tmp['DateTime'] = pd.to_datetime(tmp['Date/Time (UTC)'])
 
       # add year data
       if not join:
