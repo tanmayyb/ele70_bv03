@@ -2,7 +2,7 @@
 # Paste code below into your script to access our API/functions
 #######
 # import urllib.request
-# api_url = 'https://raw.githubusercontent.com/tanmayyb/tmu-capstone-anomaly-detection/refs/heads/main/api/imports/apis.py'
+# api_url = 'https://raw.githubusercontent.com/tanmayyb/tmu-capstone-anomaly-detection/refs/heads/main/api/datasets.py'
 # exec(urllib.request.urlopen(api_url).read())
 
 import pandas as pd
