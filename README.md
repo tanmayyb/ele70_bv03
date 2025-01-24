@@ -2,15 +2,16 @@
  
 
  ## Requirements
- 1. (Optional) Install Python 3.9 or later
+ 1. (Optional) Install Python 3.9 or later. (Recommended) Uninstall any previous versions of Python and install [Python 3.12](https://www.python.org/downloads/release/python-3128/)
  2. (Optional) With command prompt/termonal/powershell, run `python --version` to check if Python is installed.
- 3.1. Download Git for Windows from https://git-scm.com/download/win
- 3.2. Run the downloaded installer (Git-X.XX.X-64-bit.exe)
- 3.3. Accept the default settings during installation
- 3.4. Open Command Prompt and verify Git is installed by running:
+ 3. Download Git for Windows from https://git-scm.com/download/win
+ 4. Run the downloaded installer (Git-X.XX.X-64-bit.exe)
+ 5. Accept the default settings during installation
+ 6. Open Command Prompt and verify Git is installed by running:
       ```
       git --version
       ```
+
 ## Setup
 With terminal (command prompt/powershell) open at a directory of your choice, run the following command:
     ```
