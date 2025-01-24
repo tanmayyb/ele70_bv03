@@ -66,9 +66,12 @@ if %errorlevel% neq 0 (
     python -m pip install virtualenv
     if %errorlevel% neq 0 (
         echo Failed to install virtualenv.
-        exit /b 1
+        @REM exit /b 1
+        echo Try installing virtualenv in case Python/Scripts is not in PATH.
     )
 )
+
+
 
 :: Create virtual environment
 echo Creating virtual environment "bv03"...
