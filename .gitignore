@@ -1,0 +1,13 @@
+# add pycache to gitignore
+__pycache__/
+
+# add vscode to gitignore
+.vscode/
+
+# add common files that people forget to add to gitignore
+.DS_Store
+.env
+.env.*
+
+# ignore bv03 folder
+bv03/
