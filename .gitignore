@@ -11,3 +11,7 @@ __pycache__/
 
 # ignore bv03 folder
 bv03/
+
+
+# ignore data files
+*.csv

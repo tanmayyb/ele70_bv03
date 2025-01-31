@@ -1,0 +1,75 @@
+/* static/styles.css */
+
+/* Copy all your CSS styles from your original HTML code */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #2d2d2d;
+    color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+.container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #333;
+}
+h1, h2, h3, h4 {
+    margin-bottom: 20px;
+}
+.input-field, .file-upload, button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 20px;
+    border: none;
+}
+.input-field {
+    background-color: #444;
+    color: #f5f5f5;
+    text-align: center;
+}
+.file-upload {
+    cursor: pointer;
+    background-color: #444;
+    color: #f5f5f5;
+}
+button {
+    background-color: #0066cc;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+button:hover {
+    background-color: #0052a3;
+}
+.screen {
+    display: none;
+}
+.screen.active {
+    display: block;
+}
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+.chart {
+    width: 100%;
+    height: 250px;
+    background-color: #555;
+    border-radius: 10px;
+    padding: 10px;
+}
