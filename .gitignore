@@ -15,3 +15,5 @@ bv03/
 
 # ignore data files
 *.csv
+
+**/data
