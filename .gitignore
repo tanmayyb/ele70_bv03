@@ -17,3 +17,4 @@ bv03/
 *.csv
 
 **/data
+**/outputs
