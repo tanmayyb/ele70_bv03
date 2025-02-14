@@ -1,6 +1,10 @@
 ipykernel
+ipywidgets
 plotly
+nbformat
+matplotlib
 pandas
 tqdm
 xgboost
 scikit-learn
+seaborn
