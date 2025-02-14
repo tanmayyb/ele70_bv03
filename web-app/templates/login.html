@@ -1,0 +1,24 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login - Forecasting Anomaly APP</title>
+    <style>
+        /* Include your CSS styles here */
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Forecasting Anomaly APP</h1>
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+        <form method="post">
+            <input type="text" name="username" class="input-field" placeholder="Username">
+            <input type="password" name="password" class="input-field" placeholder="Password">
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>
