@@ -1,0 +1,6 @@
+ipykernel
+plotly
+pandas
+tqdm
+xgboost
+scikit-learn
