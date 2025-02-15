@@ -149,7 +149,6 @@ class Dataset():
 
 
 
-
 class IESODataset(Dataset):
   def __init__(self, dataset_type: str, region: str = "ON"):
     if region != "ON":
@@ -366,6 +365,8 @@ class IESODataset(Dataset):
             concurrent.futures.wait(futures)
     
     self.selected_local_files = self.downloaded_filenames
+    self.selected_local_files.sort()
+    del self.downloaded_filenames
   
   def parse_fsa_file(self, filepath, target_val, target_name):
     df = pd.read_csv(filepath, header=3)
@@ -450,6 +451,7 @@ class IESODataset(Dataset):
     
     combined_data = {
         'metadata': {
+            'created_at': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S'),
             'dataset_type': self.dataset_type,
             'target_name': self.target_name,
             'target_val': self.target_val,
