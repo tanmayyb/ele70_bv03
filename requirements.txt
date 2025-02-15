@@ -8,3 +8,7 @@ tqdm
 xgboost
 scikit-learn
 seaborn
+beautifulsoup4
+urllib
+zipfile
+
