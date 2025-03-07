@@ -12,3 +12,7 @@ beautifulsoup4
 urllib
 zipfile
 
+# external libraries
+meteostat 
+geopy
+geopandas
