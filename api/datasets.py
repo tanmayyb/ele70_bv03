@@ -276,6 +276,12 @@ class IESODataset(Dataset):
 
     # Filter files based on date range
     selected_files = [f for f, d in zip(files, self.available_dates) if start_date <= int(d) <= end_date]
+    self.selected_files = selected_files
+
+    if len(selected_files) == 0:
+      raise ValueError("No files found for the given date range, please check the date range and try again.\
+                        For FSA data, the date range should be in the format YYYYMM.\
+                        For Zonal data, the date range should be in the format YYYY.")
 
     if file_type == "zip":
       self.download_zip_dataset(selected_files)
