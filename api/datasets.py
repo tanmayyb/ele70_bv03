@@ -124,16 +124,16 @@ import json
 
 
 class Dataset():
-  def __init__(self, region : str, country : str = "Canada"):
-    if country != "CANADA":
-      raise ValueError("Currently only supports 'CANADA'")
+  def __init__(self, region : str, country : str = "CA"):
+    if country != "CA":
+      raise ValueError("Currently only supports 'CA'")
     self.country = country.upper()
     self.region = region.upper()
     self.postal_codes = None
     self.cities = self.load_cities()
 
   def load_cities(self):
-    if self.country == "CANADA":
+    if self.country == "CA":
       url = 'https://raw.githubusercontent.com/tanmayyb/ele70_bv03/refs/heads/main/api/canadacities.txt'
       df = pd.read_csv(url)
 
@@ -145,7 +145,7 @@ class Dataset():
       self.postal_codes = [str(code).split() if pd.notna(code) else [] for code in postal_codes]
       return cities
     else:
-      raise ValueError("Currently only supports 'CANADA'")
+      raise ValueError("Currently only supports 'CA'")
 
 
 
@@ -158,7 +158,7 @@ class IESODataset(Dataset):
     if self.dataset_type not in ["zonal", "fsa"]:
       raise ValueError("Dataset type must be either 'zonal' or 'fsa'")
 
-    super().__init__(region, "CANADA")
+    super().__init__(region, "CA")
 
     self.dataset_name = f"ieso_{self.dataset_type}"
     self.data_dir = "./data/ieso"
