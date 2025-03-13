@@ -551,8 +551,7 @@ import random
 from collections import OrderedDict
 
 class ClimateDataset(Dataset):
-  def __init__(self, iesodata: IESODataset, region: str = "ON", 
-               sampling_seed: int = 42, sample_num: int = 5):
+  def __init__(self, iesodata: IESODataset, region: str = "ON"):
     super().__init__(region, "CA")
     self.dataset_type = "climate"
     self.data_dir = "./data/climate"
@@ -573,11 +572,14 @@ class ClimateDataset(Dataset):
     self.ieso_target_val = self.ieso_dataset.target_val
 
     self.datetime_range = self.ieso_dataset.datetime_range
-    self.sample_num = sample_num
-    self.sampling_seed = sampling_seed
     self.selected_station_ids = []
 
-  def load_dataset(self, filepath:str=None, download:bool=True):
+  def load_dataset(self, sample_num: int = 5, sampling_seed: int = 42, 
+                   download:bool=True, filepath:str=None):
+    
+    self.sample_num = sample_num
+    self.sampling_seed = sampling_seed
+
     if download:
       self.get_weather_stations()
       self.select_weather_stations()
@@ -757,3 +759,27 @@ class ClimateDataset(Dataset):
     return df
 
 
+class DatasetPreprocessor():
+  def __init__(self, ieso_dataset: IESODataset, climate_dataset: ClimateDataset):
+    self.ieso_dataset = ieso_dataset
+    self.climate_dataset = climate_dataset
+    self.target_name = ieso_dataset.target_name
+
+  def preprocess(self, delete_leap_day: bool = False):
+    # merge ieso and climate data    
+    df = ieso.df.merge(climate.df, left_index=True, right_index=True, how='inner')
+    df = df.reset_index()
+    df['Y'] = df['DateTime'].dt.year
+    df['M'] = df['DateTime'].dt.month
+    df['D'] = df['DateTime'].dt.day
+    df['H'] = df['DateTime'].dt.hour
+
+    df.drop(columns=['DateTime'], inplace=True)
+
+    if delete_leap_day:
+      df = df[~((df.DateTime.dt.month == 2) & (df.DateTime.dt.day == 29))]
+
+    # dirty mean imputation
+    df = df.fillna(df.mean())
+
+    return self.target_name, df
