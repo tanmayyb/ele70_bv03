@@ -258,7 +258,20 @@ class IESODataset(Dataset):
 
   def get_dates(self):
     return self.available_dates
-
+  
+  def set_datetime(self, start_date: str, end_date: str):
+    
+    if len(start_date) == 4:
+      # self.datetime_range = (pd.to_datetime(start_date, format='%Y'), pd.to_datetime(end_date, format='%Y'))
+      start_dt = pd.to_datetime(start_date, format='%Y')
+      end_dt = pd.to_datetime(end_date, format='%Y')
+      end_dt = (end_dt + pd.offsets.YearEnd(0)).replace(hour=23, minute=0, second=0)
+    else:
+      start_dt = pd.to_datetime(start_date, format='%Y%m')
+      end_dt = pd.to_datetime(end_date, format='%Y%m')
+      end_dt = (end_dt + pd.offsets.MonthEnd(0)).replace(hour=23, minute=0, second=0)
+    self.datetime_range = (start_dt, end_dt)
+    
   def download_dataset(self, start_date: int, end_date: int):
     if isinstance(start_date, str):
         start_date = int(start_date)
@@ -431,15 +444,25 @@ class IESODataset(Dataset):
       return pd.concat(results, ignore_index=True) if results else pd.DataFrame()
   
   def load_dataset(self, start_date: int=None, end_date: int=None, target_idx: int=None, download: bool = True, filepath: str=None, chunk_size: int = 4):
+    if target_idx is None:
+      target_idx = self.target_idx
     if download:
       if start_date is None or end_date is None:
           raise ValueError("start_date and end_date must be provided")
+
+      # store datetime range       
+      self.set_datetime(str(start_date), str(end_date))
       self.download_dataset(start_date, end_date)
+      
       if target_idx is not None:
         self.set_target(target_idx)
         df = self.parse_dataset(chunk_size)
+        df['DateTime'] = df['DateTime'] - pd.Timedelta(hours=1)
+        df.set_index('DateTime', inplace=True)
         self.df = df
         return df
+      else:
+        print("No target value set. Please call set_target() first to generate a df.")
     else:
       self.load_from_json(filepath)
 
@@ -502,14 +525,235 @@ class IESODataset(Dataset):
     self.selected_dates = metadata['date_range']
     self.filetype = metadata['filetype']
     self.selected_local_files = metadata['files']
+
+    start_date = str(self.selected_dates[0])
+    end_date = str(self.selected_dates[1])
+    self.set_datetime(start_date, end_date)
     
     # Convert data back to DataFrame
     df = pd.DataFrame(data)
     
     # Convert DateTime back to datetime type
     df['DateTime'] = pd.to_datetime(df['DateTime'])
+    df.set_index('DateTime', inplace=True)
     
     # Store the DataFrame
     self.df = df
     
     return df
+  
+
+from meteostat import Stations, Hourly
+from geopy.geocoders import Nominatim
+import geopandas as gpd
+from shapely.geometry import Point
+import random
+from collections import OrderedDict
+
+class ClimateDataset(Dataset):
+  def __init__(self, iesodata: IESODataset, region: str = "ON", 
+               sampling_seed: int = 42, sample_num: int = 5):
+    super().__init__(region, "CA")
+    self.dataset_type = "climate"
+    self.data_dir = "./data/climate"
+    self.default_filename = "climate_dataset.json"
+    self.dataset_name = 'climate'
+    
+    self.ieso_dataset = iesodata    
+    if hasattr(self.ieso_dataset, 'target_name'):
+      self.target_name = self.ieso_dataset.target_name
+    else:
+      raise ValueError("IESO dataset does not have target name")  
+    if self.target_name is None:
+      raise ValueError("IESO dataset target name is not set")
+
+    self.weather_station_ids = None
+    self.ieso_dataset_type = self.ieso_dataset.dataset_type
+    self.ieso_target_name = self.ieso_dataset.target_name
+    self.ieso_target_val = self.ieso_dataset.target_val
+
+    self.datetime_range = self.ieso_dataset.datetime_range
+    self.sample_num = sample_num
+    self.sampling_seed = sampling_seed
+    self.selected_station_ids = []
+
+  def load_dataset(self, filepath:str=None, download:bool=True):
+    if download:
+      self.get_weather_stations()
+      self.select_weather_stations()
+      self.combine_station_data()
+    else:
+      self.load_from_json(filepath)
+
+  def select_weather_stations(self):
+    dataset_type  = self.ieso_dataset_type
+    stations = self.weather_stations
+    sample_num = self.sample_num
+    seed = self.sampling_seed
+    num_available_stations = len(stations)
+    station_ids = stations.index.to_list()
+
+    sample_num = min(num_available_stations, sample_num)
+    num_selected_stations = 0  
+    station_data = OrderedDict()
+
+    start_dt, end_dt = self.datetime_range
+
+    random.seed(seed)
+    while num_selected_stations < sample_num:
+
+      if dataset_type == 'zonal':
+        station_id = random.choice(station_ids)
+        station_ids.remove(station_id) # remove this station from full list
+      elif dataset_type == 'fsa':
+        station_id = station_ids.pop(0)
+
+      df = self.load_station_data(station_id)
+      is_good = self.perform_checks(df, start_dt, end_dt)
+      if is_good:
+        num_selected_stations +=1
+        station_data[station_id] = df[(df.index >= start_dt) & (df.index <= end_dt)]
+      
+      if len(station_ids) == 0:
+          break
+
+    if num_selected_stations == 0:
+      raise RuntimeError('WTF, no weather stations passed checks!')
+    
+    self.selected_station_ids = list(station_data.keys())
+    self.station_data = station_data 
+
+
+  def perform_checks(self, df: pd.DataFrame, start_dt, end_dt) -> bool:
+
+    if df.empty:
+      return False 
+  
+    if start_dt not in df.index or end_dt not in df.index:
+        return False
+
+    return True
+
+  def load_station_data(self, station_id):
+    df = Hourly(station_id).fetch()
+    return df
+
+  def combine_station_data(self):
+    def add_prefix_to_columns(df, prefix):
+      df = df.add_prefix(f"{prefix}_")
+      df.rename(columns={f"{prefix}_time": "time"}, inplace=True)
+      return df
+
+    combined_df = None
+    for station_id, df in self.station_data.items():
+      df = add_prefix_to_columns(df, station_id)
+      if combined_df is None:
+        combined_df = df
+      else:
+        combined_df = combined_df.merge(df, on="time", how="outer")
+
+    self.df = combined_df
+
+  def get_weather_stations(self):
+    dataset_type = self.ieso_dataset_type
+
+    if dataset_type == 'zonal':
+      self.get_zone_based_weather_stations()
+    elif dataset_type == 'fsa':
+      self.get_location_based_weather_stations()
+    else:
+      raise ValueError("Unknown dataset type, cannot resolve weather stations!")
+       
+
+  def get_zone_based_weather_stations(self):
+    target = self.target_name
+    geojson_url = 'https://raw.githubusercontent.com/tanmayyb/ele70_bv03/refs/heads/main/api/ieso_zones.geojson'
+
+    # read zonal geojson for zonal geometry
+    zones = gpd.read_file(geojson_url).to_crs("EPSG:4326")
+    zones.set_index('Name', inplace=True)
+    def convert_to_tuple(coord_str):
+        return tuple(map(float, coord_str.strip('()').split(', ')))
+    zones['top_left'] = zones['top_left'].apply(convert_to_tuple)
+    zones['bottom_right'] = zones['bottom_right'].apply(convert_to_tuple)    
+
+    # make bounding box
+    top_left = zones.loc[target].top_left
+    bottom_right = zones.loc[target].bottom_right
+    zone_geometry = zones.loc[target].geometry
+    def is_within_zone(station):
+        point = Point(station['longitude'], station['latitude'])
+        return point.within(zone_geometry)
+
+    # fetch stations in bounding box
+    stations = Stations().region(self.country)
+    stations = stations.bounds(top_left, bottom_right) 
+    stations = stations.fetch()
+    filtered_stations = stations[stations.apply(is_within_zone, axis=1)] # filter stations within zone geometry
+    # self.weather_station_ids = filtered_stations['id'].tolist()
+    self.weather_stations = filtered_stations
+
+  def get_location_based_weather_stations(self):
+    target = self.target_name
+    
+    geolocator = Nominatim(user_agent="geoapi")
+    location = geolocator.geocode(f"{target}, {self.region}")
+    stations = Stations().region(self.country)
+    stations = stations.nearby(location.latitude, location.longitude)
+    stations = stations.fetch()
+    self.weather_stations = stations
+
+  def save_dataset(self, filepath=None):
+    if not hasattr(self, 'df'):
+      raise ValueError("No dataset loaded to save. Call load_dataset first.")
+
+    if filepath is None:
+      os.makedirs(self.data_dir, exist_ok=True)
+      filepath = os.path.join(self.data_dir, self.default_filename)
+
+    df_to_save = self.df.copy()
+    df_to_save.reset_index(inplace=True)
+    df_to_save.rename(columns={'time': 'DateTime'}, inplace=True)
+    df_to_save['DateTime'] = df_to_save['DateTime'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+    combined_data = {
+      'metadata': {
+          'created_at': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S'),
+          'dataset_type': self.dataset_type,
+          'column_types': {col: str(dtype) for col, dtype in self.df.dtypes.items()}
+      },
+      'data': df_to_save.to_dict(orient='records')
+    }
+
+    # import json
+    # Save combined metadata and data
+    with open(filepath, 'w') as f:
+        json.dump(combined_data, f, indent=2)
+
+
+  def load_from_json(self, filepath=None):
+    # Use default filepath if none provided
+    if filepath is None:
+      filepath = os.path.join(self.data_dir, self.default_filename)
+
+    # Load the JSON file
+    with open(filepath, 'r') as f:
+      combined_data = json.load(f)
+    
+    # Extract metadata and data
+    metadata = combined_data['metadata']
+    data = combined_data['data']
+
+    # Convert data back to DataFrame
+    df = pd.DataFrame(data)
+    
+    # Convert DateTime back to datetime type
+    df['DateTime'] = pd.to_datetime(df['DateTime'])
+    df.set_index('DateTime', inplace=True)
+    
+    # Store the DataFrame
+    self.df = df
+    
+    return df
+
+
