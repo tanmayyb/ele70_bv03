@@ -768,7 +768,7 @@ class DatasetPreprocessor():
   def preprocess(self, delete_leap_day: bool = False):
     # merge ieso and climate data    
     df = self.ieso_dataset.df.merge(self.climate_dataset.df, left_index=True, right_index=True, how='inner')
-    df = df.reset_index()
+    df = df.reset_index().rename(columns={'index': 'DateTime'})
     df['Y'] = df['DateTime'].dt.year
     df['M'] = df['DateTime'].dt.month
     df['D'] = df['DateTime'].dt.day
