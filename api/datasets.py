@@ -247,7 +247,7 @@ class IESODataset(Dataset):
 
       if dates:
           dates.sort()
-          print(f"Time range: {dates[0]} to {dates[-1]}")              
+          print(f"Available Time range for IESO {self.dataset_type} dataset: {dates[0]} to {dates[-1]}")              
       
       available_files = files[1:]
       filetype = "zip"
@@ -330,7 +330,7 @@ class IESODataset(Dataset):
                 self.extracted_filenames = []
             self.extracted_filenames.extend(extracted_files)
             
-            # Update progress bar
+            # Update progress barTime range
             pbar.update(1)
             return True
         except Exception as e:
