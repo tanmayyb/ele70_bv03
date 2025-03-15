@@ -12,6 +12,9 @@ beautifulsoup4
 urllib
 zipfile
 
+# custom libraries
+customtkinter
+
 # external libraries
 meteostat 
 geopy
