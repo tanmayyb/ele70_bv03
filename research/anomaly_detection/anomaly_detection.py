@@ -45,7 +45,7 @@ class AnomalyDetection:
 
     gmm = GaussianMixture(n_components=1, random_state=42).fit(errors)
 
-    log_likelihood = gmm.score_samples(errors)      # how well the model explains observed data
+    log_likelihood = gmm.score_samples(errors)   
     threshold = np.percentile(log_likelihood, 5)
     gmm_anomalies = self.data[log_likelihood < threshold]
 
@@ -177,8 +177,8 @@ class AnomalyDetection:
     plt.xlabel('Day')
     plt.ylabel('Proportion of anomalies')
     plt.title('Anomaly Frequency by Day (normalized)')
-    plt.xticks(range(1, 32))  # Ensure days are labeled 1 to 31
-    plt.ylim(0, normalized_counts.max() + 0.05)  # Since it's a proportion
+    plt.xticks(range(1, 32))
+    plt.ylim(0, normalized_counts.max() + 0.05)
     plt.show()
 
   # plots anomaly frequency per hour
