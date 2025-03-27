@@ -9,14 +9,13 @@ from prettytable import PrettyTable
 
 class AnomalyDetection:
 
-  def __init__(self, csv_data, target):
-    self.csv_data = csv_data
-    self.data = pd.DataFrame({'DateTime': self.csv_data['DateTime'], 'Actual': self.csv_data['Toronto'], 'Predicted': self.csv_data['pred']})
+  def __init__(self, model_df, target):
+    self.data = pd.DataFrame({'DateTime': model_df['DateTime'], 'Actual': model_df[target], 'Predicted': model_df['pred']})
     self.data['DateTime'] = pd.to_datetime(self.data['DateTime'])
     self.target = target
-    self.errors = self.csv_data['error']
-    self.actual = self.csv_data[self.target]
-    self.predicted = self.csv_data['pred']
+    self.errors = model_df['error']
+    self.actual = self.data['Actual']
+    self.predicted = self.data['Predicted']
     self.anomalies = pd.DataFrame()
     self.statistical_detection()
     self.gmm()
@@ -45,7 +44,7 @@ class AnomalyDetection:
 
     gmm = GaussianMixture(n_components=1, random_state=42).fit(errors)
 
-    log_likelihood = gmm.score_samples(errors)   
+    log_likelihood = gmm.score_samples(errors)      # how well the model explains observed data
     threshold = np.percentile(log_likelihood, 5)
     gmm_anomalies = self.data[log_likelihood < threshold]
 
@@ -77,7 +76,7 @@ class AnomalyDetection:
 
   # prints number of anomalies detected
   def num_anomalies(self):
-    print(f'\n{len(self.anomalies)} final anomalies detected out of {len(self.csv_data)} data points using Gaussian mixture modelling and statistical calculations.\n')
+    print(f'\n{len(self.anomalies)} final anomalies detected out of {len(self.data)} data points using Gaussian mixture modelling and statistical calculations.\n')
 
   # prints table of best ten anomalies (highest anomaly scores)
   def best_ten_anomalies(self):
@@ -97,7 +96,7 @@ class AnomalyDetection:
       table.add_row([row['DateTime'], row['Actual'], row['Predicted'], row['Anomaly Score']])
     print(table)
 
-  # plots longest streak of consecutive anomalies 
+  # plots longest streak of consecutive anomalies
   def longest_anomalous_streak(self, ax=None):
     self.anomalies['group'] = (self.anomalies.index.to_series().diff() != 1).cumsum()
     longest_group = self.anomalies['group'].value_counts().idxmax()
@@ -177,8 +176,8 @@ class AnomalyDetection:
     plt.xlabel('Day')
     plt.ylabel('Proportion of anomalies')
     plt.title('Anomaly Frequency by Day (normalized)')
-    plt.xticks(range(1, 32))
-    plt.ylim(0, normalized_counts.max() + 0.05)
+    plt.xticks(range(1, 32))  # Ensure days are labeled 1 to 31
+    plt.ylim(0, normalized_counts.max() + 0.05)  # Since it's a proportion
     plt.show()
 
   # plots anomaly frequency per hour
