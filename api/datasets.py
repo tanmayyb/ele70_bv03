@@ -444,6 +444,9 @@ class IESODataset(Dataset):
       return pd.concat(results, ignore_index=True) if results else pd.DataFrame()
   
   def load_dataset(self, start_date: str=None, end_date: str=None, target_idx: int=None, download: bool = True, filepath: str=None, chunk_size: int = 4):
+    if not isinstance(start_date, str) or not isinstance(end_date, str):
+      raise ValueError("start_date and end_date must be strings!")
+    
     if target_idx is None:
       target_idx = self.target_idx
     if download:
