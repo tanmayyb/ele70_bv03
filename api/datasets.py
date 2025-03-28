@@ -807,13 +807,13 @@ class DatasetPreprocessor():
   
   def save_dataset(self, filepath: str = None):
     target_name, df, dt = self.preprocess()
-
+    df['DateTime'] = dt
+    
     metadata = {
       'target_name': target_name,
       'dataset_type': self.ieso_dataset.dataset_type,
       'column_types': {col: str(dtype) for col, dtype in df.dtypes.items()}
     }
-    df['DateTime'] = dt
     with open(filepath, 'w') as f:
       for key, value in metadata.items():
         f.write(f"# {key}: {value}\n")
