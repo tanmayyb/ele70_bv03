@@ -127,10 +127,20 @@ Note: The user can also select how many weather stations they would like to samp
 1. To get the processed dataset for machine learning, the app needs to pass the ieso and climate dataset objects into a preprocessor 
 ```Python
 preprocessor = DatasetPreprocessor(ieso, climate)
-target_name, dataset = preprocessor.preprocess()
+target_name, dataset, dt = preprocessor.preprocess()
 ```
 
-That;s it!
+2. Store the preprocessed data with metadata into a csv
+```Python
+DatasetPreprocessor(ieso, climate).save_dataset('dataset.csv')
+```
+
+3. Load the preprocessed data from csv
+```Python
+target_name, dataset, dt = DatasetPreprocessor.load_dataset('dataset.csv')
+```
+
+That's it!
 
 
 ## Algorithms
