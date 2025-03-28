@@ -3,6 +3,12 @@ from tkinter import filedialog
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+
+import urllib.request
+api_url = 'https://raw.githubusercontent.com/tanmayyb/ele70_bv03/refs/heads/main/api/datasets.py'
+exec(urllib.request.urlopen(api_url).read())
+
+
 # Global style variables
 STYLES = {
     # Fonts
@@ -200,7 +206,10 @@ class CreateDatasetPage(ctk.CTkFrame):
         content_frame.grid(row=0, column=0, sticky="nsew", padx=STYLES["padding_large"], pady=STYLES["padding_large"])
         content_frame.grid_columnconfigure(0, weight=1)
         
-        options = ["Option1", "Option2"]
+        self.energy_options = ["ZONAL", "FSA"]
+        dummy_options = ["Option1", "Option2"]
+        predictor_options = ["Climate"]
+        self.target_options = ["Option"]
         
         # Title
         title = ctk.CTkLabel(content_frame, text="Create Dataset", font=STYLES["title_font"])
@@ -215,13 +224,17 @@ class CreateDatasetPage(ctk.CTkFrame):
         ctk.CTkLabel(form_frame, text="Select Energy Repository:", 
                     font=STYLES["text_font"], 
                     anchor="w").grid(row=0, column=0, sticky="w", padx=STYLES["padding_small"], pady=5)
-        ctk.CTkComboBox(form_frame, values=options, width=300).grid(row=0, column=1, sticky="ew", padx=STYLES["padding_small"], pady=5)
+        energy_combo = ctk.CTkComboBox(form_frame, values=self.energy_options, width=300, 
+                                     command=self.on_energy_select)
+        energy_combo.grid(row=0, column=1, sticky="ew", padx=STYLES["padding_small"], pady=5)
         
         # Target Zone
         ctk.CTkLabel(form_frame, text="Select Target Zone:", 
                     font=STYLES["text_font"], 
                     anchor="w").grid(row=1, column=0, sticky="w", padx=STYLES["padding_small"], pady=5)
-        ctk.CTkComboBox(form_frame, values=options, width=300).grid(row=1, column=1, sticky="ew", padx=STYLES["padding_small"], pady=5)
+        self.target_combo = ctk.CTkComboBox(form_frame, values=dummy_options, width=300,
+                                     command=self.on_target_select)
+        self.target_combo.grid(row=1, column=1, sticky="ew", padx=STYLES["padding_small"], pady=5)
         
         # Dataset Range
         ctk.CTkLabel(form_frame, text="Select Dataset Range:", 
@@ -239,9 +252,9 @@ class CreateDatasetPage(ctk.CTkFrame):
         ctk.CTkLabel(date_range_frame, text="Start Date:", 
                     font=STYLES["text_font"], 
                     anchor="w").grid(row=0, column=0, sticky="w", pady=(0, 5))
-        date_options = ["2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06"]
-        start_date = ctk.CTkComboBox(date_range_frame, values=date_options, width=140)
-        start_date.grid(row=1, column=0, sticky="ew", padx=(0, 5))
+        self.date_options = ["2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06"]
+        self.start_date = ctk.CTkComboBox(date_range_frame, values=self.date_options, width=140)
+        self.start_date.grid(row=1, column=0, sticky="ew", padx=(0, 5))
         
         # Separator
         ctk.CTkLabel(date_range_frame, text="to", 
@@ -252,15 +265,15 @@ class CreateDatasetPage(ctk.CTkFrame):
         ctk.CTkLabel(date_range_frame, text="End Date:", 
                     font=STYLES["text_font"], 
                     anchor="w").grid(row=0, column=2, sticky="w", pady=(0, 5))
-        end_date = ctk.CTkComboBox(date_range_frame, values=date_options, width=140)
-        end_date.set(date_options[-1])  # Set default to last date
-        end_date.grid(row=1, column=2, sticky="ew", padx=(5, 0))
+        self.end_date = ctk.CTkComboBox(date_range_frame, values=self.date_options, width=140)
+        self.end_date.set(self.date_options[-1])  # Set default to last date
+        self.end_date.grid(row=1, column=2, sticky="ew", padx=(5, 0))
         
         # Predictor Repository
         ctk.CTkLabel(form_frame, text="Select Predictor Repository:", 
                     font=STYLES["text_font"], 
                     anchor="w").grid(row=3, column=0, sticky="w", padx=STYLES["padding_small"], pady=5)
-        ctk.CTkComboBox(form_frame, values=options, width=300).grid(row=3, column=1, sticky="ew", padx=STYLES["padding_small"], pady=5)
+        ctk.CTkComboBox(form_frame, values=predictor_options, width=300).grid(row=3, column=1, sticky="ew", padx=STYLES["padding_small"], pady=5)
         
         # Navigation buttons
         button_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
@@ -289,6 +302,22 @@ class CreateDatasetPage(ctk.CTkFrame):
                                 corner_radius=STYLES["corner_radius"],
                                 command=lambda: parent.show_frame(ModelSelectionPage))
         next_btn.grid(row=0, column=2, pady=STYLES["padding_small"], padx=STYLES["padding_small"], sticky="ew")
+
+    def on_energy_select(self, choice):
+        print(f"Selected energy repository: {choice}")
+        self.ieso = IESODataset(choice) 
+
+        target_options = self.ieso.get_target_options() # returns list of the target options
+        available_dates = self.ieso.get_dates() # returns list of available dates (str)
+        available_dates = [str(date) for date in available_dates]
+        self.target_combo.configure(values=target_options)
+        self.start_date.configure(values=available_dates)
+        self.end_date.configure(values=available_dates)
+        
+    def on_target_select(self, choice):
+        print(f"Selected target zone: {choice}")
+        self.ieso.set_target(choice)
+        # Add your callback logic here
 
 class ModelSelectionPage(ctk.CTkFrame):
     def __init__(self, parent):
