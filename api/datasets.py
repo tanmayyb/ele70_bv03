@@ -470,6 +470,8 @@ class IESODataset(Dataset):
     if download:
       if start_date is None or end_date is None:
           raise ValueError("start_date and end_date must be provided")
+      
+      print(f"Selected Time Range for IESO {self.dataset_type} dataset: {start_date} to {end_date}")
 
       # store datetime range       
       self.set_datetime(start_date, end_date)
