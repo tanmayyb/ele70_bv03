@@ -777,7 +777,7 @@ class DatasetPreprocessor():
     df['D'] = df['DateTime'].dt.day
     df['H'] = df['DateTime'].dt.hour
 
-    df.drop(columns=['DateTime'], inplace=True)
+    dt = df.pop('DateTime')
 
     if delete_leap_day:
       df = df[~((df.DateTime.dt.month == 2) & (df.DateTime.dt.day == 29))]
@@ -785,4 +785,4 @@ class DatasetPreprocessor():
     # dirty mean imputation
     df = df.fillna(df.mean())
 
-    return self.target_name, df
+    return self.target_name, df, dt
