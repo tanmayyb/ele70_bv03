@@ -65,16 +65,19 @@
 
 ### Preprocessor
 
-| Property/Attribute | Description |
-|-------------------|-------------|
-| ieso_dataset | Reference to an IESODataset instance containing energy demand data |
-| climate_dataset | Reference to a ClimateDataset instance containing weather data |
-| target_name | Target name inherited from the IESO dataset (e.g., zone name or city) |
+| Property | Description |
+|-----------|-------------|
+| ieso_dataset | IESO energy demand data instance |
+| climate_dataset | Weather data instance |
+| target_name | Target name from IESO dataset |
 
 | Method | Description |
 |--------|-------------|
-| __init__(ieso_dataset, climate_dataset) | Initializes the Preprocessor with IESO and Climate datasets |
-| preprocess(delete_leap_day=False) | Merges IESO and climate data, adds time features (Y,M,D,H), performs basic cleaning, and returns the target name and processed dataframe |
+| init(ieso_dataset, climate_dataset) | Initialize with IESO and Climate datasets |
+| preprocess(delete_leap_day=False) |  Merges IESO and climate data, adds time features (Y,M,D,H), performs basic cleaning, and returns the target name and processed dataframe |
+| save_dataset(filepath) | Save preprocessed data with metadata to CSV |
+| load_dataset(filepath) -> tuple[str, df, dt] | Load preprocessed data from CSV, ready to use for training |
+
 
 ## Usage
 
