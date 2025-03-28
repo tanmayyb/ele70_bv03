@@ -7,108 +7,126 @@
 
 import pandas as pd
 
-# Dataloader for Energy Demand (IESO Zonal Ontario-wide)
-def load_ieso_dataset( first_year:int, last_year:int, join:bool=False) -> dict|pd.DataFrame:
-  # loads dataset from multiple years
+def create_train_test_split(dataset:pd.DataFrame, target:str=None, split_coeff:float=0.8, dt=None) -> tuple:
+  training_cutoff = int(split_coeff*len(dataset))
+  train = dataset.iloc[:training_cutoff]
+  test = dataset.iloc[training_cutoff:]
 
-  # assertion checks
-  assert first_year <= last_year, "invalid entry for first/last year"
-  assert first_year>=2003, "invalid entry for first_year, data before 2003 is N/A"
-  assert last_year<=2024, "invalid entry for last year"
+  X_train = train.drop(columns=[target])
+  y_train = train[target]
+  X_test = test.drop(columns=[target])
+  y_test = test[target]
 
-  # prefix and suffix defined for IESO api
-  url_prefix = 'http://reports.ieso.ca/public/DemandZonal/PUB_DemandZonal_'
-  url_suffix = '.csv'
+  (train_idx, test_idx) = None, None
+  if dt is not None:
+    train_idx = dt[:training_cutoff]
+    test_idx = dt[training_cutoff:]
 
-  if first_year == last_year:
-    # only for 1 year
+  return (X_train, X_test, y_train, y_test), (train_idx, test_idx)
 
-    url = url_prefix+str(first_year)+url_suffix
-    df = pd.read_csv(url, header=3) # returns record
-    # add datetime
-    df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
 
-    return df
+# # Dataloader for Energy Demand (IESO Zonal Ontario-wide)
+# def load_ieso_dataset( first_year:int, last_year:int, join:bool=False) -> dict|pd.DataFrame:
+#   # loads dataset from multiple years
 
-  else:
-    # multiple years
-    # decide dataset data type based on
-    # if user wants a joined dataset
-    if not join:
-      dataset = dict()
-    else:
-      dataset = pd.DataFrame()
+#   # assertion checks
+#   assert first_year <= last_year, "invalid entry for first/last year"
+#   assert first_year>=2003, "invalid entry for first_year, data before 2003 is N/A"
+#   assert last_year<=2024, "invalid entry for last year"
 
-    # multiple year data
-    for year in range(first_year, last_year+1):
+#   # prefix and suffix defined for IESO api
+#   url_prefix = 'http://reports.ieso.ca/public/DemandZonal/PUB_DemandZonal_'
+#   url_suffix = '.csv'
 
-      url = url_prefix+str(year)+url_suffix
-      df = pd.read_csv(url, header=3) # returns record
-      # add datetime
-      df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
+#   if first_year == last_year:
+#     # only for 1 year
 
-      if not join:
-        dataset[year] = df
-      else:
-        dataset = pd.concat([dataset, df])
+#     url = url_prefix+str(first_year)+url_suffix
+#     df = pd.read_csv(url, header=3) # returns record
+#     # add datetime
+#     df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
 
-    return dataset
+#     return df
+
+#   else:
+#     # multiple years
+#     # decide dataset data type based on
+#     # if user wants a joined dataset
+#     if not join:
+#       dataset = dict()
+#     else:
+#       dataset = pd.DataFrame()
+
+#     # multiple year data
+#     for year in range(first_year, last_year+1):
+
+#       url = url_prefix+str(year)+url_suffix
+#       df = pd.read_csv(url, header=3) # returns record
+#       # add datetime
+#       df['DateTime'] = pd.to_datetime(df['Date'], utc=False)+pd.to_timedelta(df['Hour'], unit='h')
+
+#       if not join:
+#         dataset[year] = df
+#       else:
+#         dataset = pd.concat([dataset, df])
+
+#     return dataset
 
 from tqdm import tqdm
 
-# Dataloader for Weather (Canada-Wide)
-def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, join:bool=False) -> dict|pd.DataFrame:
+# # Dataloader for Weather (Canada-Wide)
+# def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, join:bool=False) -> dict|pd.DataFrame:
 
-  # assertion checks
-  assert first_year <= last_year, "invalid entry for first/last year"
-  assert first_year>=2003, "invalid entry for first_year, please select >=2003"
-  assert last_year<=2024, "invalid entry for last year"
+#   # assertion checks
+#   assert first_year <= last_year, "invalid entry for first/last year"
+#   assert first_year>=2003, "invalid entry for first_year, please select >=2003"
+#   assert last_year<=2024, "invalid entry for last year"
 
-  # hourly data for a given year, and station
-  # f'https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&time=UTC&stationID=31688&Year=2008&Month={i}&timeframe=1&submit=Download+Data'
+#   # hourly data for a given year, and station
+#   # f'https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv&time=UTC&stationID=31688&Year=2008&Month={i}&timeframe=1&submit=Download+Data'
 
-  num_years = last_year - first_year
+#   num_years = last_year - first_year
 
-  url_prefix = 'https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv'
-  timeframe = 1
+#   url_prefix = 'https://climate.weather.gc.ca/climate_data/bulk_data_e.html?format=csv'
+#   timeframe = 1
 
-  # add 1 year data
-  if num_years<=0:
-    tmp = []
-    for month in range(1, 12+1):
-      url = url_prefix+f'&time=UTC&stationID={station_id}&Year={first_year}&Month={month}&timeframe={timeframe}&submit=Data'
-      df = pd.read_csv(url)      
-      tmp.append(df)
-    df = pd.concat(tmp) # concat 12 months to 1 year df
+#   # add 1 year data
+#   if num_years<=0:
+#     tmp = []
+#     for month in range(1, 12+1):
+#       url = url_prefix+f'&time=UTC&stationID={station_id}&Year={first_year}&Month={month}&timeframe={timeframe}&submit=Data'
+#       df = pd.read_csv(url)      
+#       tmp.append(df)
+#     df = pd.concat(tmp) # concat 12 months to 1 year df
 
-    # add datetime
-    df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
+#     # add datetime
+#     df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
 
-    return df
+#     return df
 
-  # add multiple year data
-  else:
-    if not join:
-      data = dict()
-    else:
-      data = pd.DataFrame()
+#   # add multiple year data
+#   else:
+#     if not join:
+#       data = dict()
+#     else:
+#       data = pd.DataFrame()
 
-    for year in tqdm(range(first_year, last_year+1)):
-      tmp = []
-      for month in range(1, 12+1):
-        url = url_prefix+f'&time=UTC&stationID={station_id}&Year={year}&Month={month}&timeframe={timeframe}&submit=Data'
-        tmp.append(pd.read_csv(url))
-      df = pd.concat(tmp) # concat 12 months to 1 year df
+#     for year in tqdm(range(first_year, last_year+1)):
+#       tmp = []
+#       for month in range(1, 12+1):
+#         url = url_prefix+f'&time=UTC&stationID={station_id}&Year={year}&Month={month}&timeframe={timeframe}&submit=Data'
+#         tmp.append(pd.read_csv(url))
+#       df = pd.concat(tmp) # concat 12 months to 1 year df
       
-      # add datetime
-      df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
+#       # add datetime
+#       df['DateTime'] = pd.to_datetime(df['Date/Time (UTC)'])
 
-      # add year data
-      if not join:
-        data[year] = df
-      else:
-        data = pd.concat([data, df])
-    return data
+#       # add year data
+#       if not join:
+#         data[year] = df
+#       else:
+#         data = pd.concat([data, df])
+#     return data
   
 
 import pandas as pd
