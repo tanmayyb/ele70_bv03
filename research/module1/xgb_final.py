@@ -113,7 +113,7 @@ else:
 
 # model output dataframe
 # to be used for anomaly detection
-output_df = pd.concat([dt, y_test, pd.Series(pred, index=y_test.index, name='pred')],axis=1)
+output_df = pd.concat([dt, y_test, pd.Series(pred, index=y_test.index, name='pred')],axis=1).dropna()
 
 
 
