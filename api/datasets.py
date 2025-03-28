@@ -5,24 +5,7 @@
 # api_url = 'https://raw.githubusercontent.com/tanmayyb/ele70_bv03/refs/heads/main/api/datasets.py'
 # exec(urllib.request.urlopen(api_url).read())
 
-import pandas as pd
-
-def create_train_test_split(dataset:pd.DataFrame, target:str=None, split_coeff:float=0.8, dt=None) -> tuple:
-  training_cutoff = int(split_coeff*len(dataset))
-  train = dataset.iloc[:training_cutoff]
-  test = dataset.iloc[training_cutoff:]
-
-  X_train = train.drop(columns=[target])
-  y_train = train[target]
-  X_test = test.drop(columns=[target])
-  y_test = test[target]
-
-  (train_idx, test_idx) = None, None
-  if dt is not None:
-    train_idx = dt[:training_cutoff]
-    test_idx = dt[training_cutoff:]
-
-  return (X_train, X_test, y_train, y_test), (train_idx, test_idx)
+# import pandas as pd
 
 
 # # Dataloader for Energy Demand (IESO Zonal Ontario-wide)
@@ -72,7 +55,7 @@ def create_train_test_split(dataset:pd.DataFrame, target:str=None, split_coeff:f
 
 #     return dataset
 
-from tqdm import tqdm
+# from tqdm import tqdm
 
 # # Dataloader for Weather (Canada-Wide)
 # def load_climate_dataset(first_year:int, last_year:int, station_id:int=31688, join:bool=False) -> dict|pd.DataFrame:
@@ -140,6 +123,23 @@ from tqdm import tqdm
 import zipfile
 import json
 
+
+def create_train_test_split(dataset:pd.DataFrame, target:str=None, split_coeff:float=0.8, dt=None) -> tuple:
+  training_cutoff = int(split_coeff*len(dataset))
+  train = dataset.iloc[:training_cutoff]
+  test = dataset.iloc[training_cutoff:]
+
+  X_train = train.drop(columns=[target])
+  y_train = train[target]
+  X_test = test.drop(columns=[target])
+  y_test = test[target]
+
+  (train_idx, test_idx) = None, None
+  if dt is not None:
+    train_idx = dt[:training_cutoff]
+    test_idx = dt[training_cutoff:]
+
+  return (X_train, X_test, y_train, y_test), (train_idx, test_idx)
 
 class Dataset():
   def __init__(self, region : str, country : str = "CA"):
