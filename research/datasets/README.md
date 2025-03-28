@@ -104,7 +104,7 @@ Note: the variables above can be used to show user options for target and dateti
 
 3. App can load the ieso dataset using a load_dataset call
 ```Python
-ieso.load_dataset(start_date=<int>, end_date=<int>, download=True)
+ieso.load_dataset(start_date=<str>, end_date=<str>, download=True)
 ```
 
 ### Climate Dataset

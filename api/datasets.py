@@ -443,7 +443,7 @@ class IESODataset(Dataset):
       
       return pd.concat(results, ignore_index=True) if results else pd.DataFrame()
   
-  def load_dataset(self, start_date: int=None, end_date: int=None, target_idx: int=None, download: bool = True, filepath: str=None, chunk_size: int = 4):
+  def load_dataset(self, start_date: str=None, end_date: str=None, target_idx: int=None, download: bool = True, filepath: str=None, chunk_size: int = 4):
     if target_idx is None:
       target_idx = self.target_idx
     if download:
@@ -451,7 +451,7 @@ class IESODataset(Dataset):
           raise ValueError("start_date and end_date must be provided")
 
       # store datetime range       
-      self.set_datetime(str(start_date), str(end_date))
+      self.set_datetime(start_date, end_date)
       self.download_dataset(start_date, end_date)
       
       if target_idx is not None:
