@@ -804,3 +804,44 @@ class DatasetPreprocessor():
     df = df.fillna(df.mean())
 
     return self.target_name, df, dt
+  
+  def save_dataset(self, filepath: str = None):
+    target_name, df, dt = self.preprocess()
+
+    metadata = {
+      'target_name': target_name,
+      'dataset_type': self.ieso_dataset.dataset_type,
+      'column_types': {col: str(dtype) for col, dtype in df.dtypes.items()}
+    }
+    df['DateTime'] = dt
+    with open(filepath, 'w') as f:
+      for key, value in metadata.items():
+        f.write(f"# {key}: {value}\n")
+      df.to_csv(f, index=False)
+
+  @staticmethod
+  def load_dataset(filepath: str = None)->tuple[str, pd.DataFrame, pd.DatetimeIndex]:
+
+    metadata = {}
+    with open(filepath, 'r') as f:
+        lines = f.readlines()
+    
+    data_start_idx = 0
+    for i, line in enumerate(lines):
+        if line.startswith('#'):
+            key_value = line[1:].strip().split(':', 1)
+            if len(key_value) == 2:
+                key, value = key_value
+                metadata[key.strip()] = value.strip()
+        else:
+            data_start_idx = i
+            break
+    
+    from io import StringIO
+    csv_data = ''.join(lines[data_start_idx:])
+    df = pd.read_csv(StringIO(csv_data))
+
+    target_name = metadata['target_name']
+    dt = df.pop('DateTime')
+
+    return target_name, df, dt
