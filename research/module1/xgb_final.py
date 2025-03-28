@@ -40,6 +40,8 @@ RUN_WITH_CALLBACK = True
 import numpy as np # linear algebra
 import xgboost as xgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+import pandas as pd
+
 if RUN_WITH_CALLBACK:
     class PlotCallback(xgb.callback.TrainingCallback):
         def __init__(self, update_callback):
@@ -106,6 +108,12 @@ else:
             # early_stopping_rounds=50,
         verbose=False)
     pred = booster.predict(X_test)
+
+
+
+# model output dataframe
+# to be used for anomaly detection
+output_df = pd.concat([dt, y_test, pd.Series(pred, index=y_test.index, name='pred')],axis=1)
 
 
 
