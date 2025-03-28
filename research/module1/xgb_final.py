@@ -35,7 +35,7 @@ y_test_numpy = y_test.to_numpy()
 
 
 
-RUN_WITH_CALLBACK = True
+RUN_WITH_CALLBACK = False
 # Train the model and predict the test set
 import numpy as np # linear algebra
 import xgboost as xgb
