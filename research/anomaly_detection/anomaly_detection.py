@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.mixture import GaussianMixture
-from sklearn.cluster import DBSCAN
 import seaborn as sns
 from scipy.stats import norm
 from prettytable import PrettyTable
@@ -10,7 +9,7 @@ from prettytable import PrettyTable
 class AnomalyDetection:
 
   def __init__(self, model_df, target):
-    self.data = pd.DataFrame({'DateTime': model_df['DateTime'], 'Actual': model_df[target], 'Predicted': model_df['pred']})
+    self.data = pd.DataFrame({'DateTime': model_df['DateTime'], 'Actual': model_df[target], 'Predicted': model_df['pred'], 'Error': model_df['error']})
     self.data['DateTime'] = pd.to_datetime(self.data['DateTime'])
     self.target = target
     self.errors = model_df['error']
@@ -63,15 +62,15 @@ class AnomalyDetection:
         plt.figure(figsize=(10, 6))
         ax = plt.gca()
 
-    ax.scatter(self.predicted, self.actual, label='Normal data', c='blue', alpha=0.7)
-    sc = ax.scatter(self.anomalies['Predicted'], self.anomalies['Actual'], c=self.anomalies['Anomaly Score'], cmap='viridis', edgecolors='k', s=50, label='Anomalies')
+    ax.scatter(self.actual, self.predicted, label='Normal data', c='blue', alpha=0.7)
+    sc = ax.scatter(self.anomalies['Actual'], self.anomalies['Predicted'], c=self.anomalies['Anomaly Score'], cmap='viridis', edgecolors='k', s=50, label='Anomalies')
 
     cbar = plt.colorbar(sc, ax=ax)
     cbar.set_label('Anomaly Likelihood')
 
-    ax.set_xlabel('Predicted')
-    ax.set_ylabel('Actual')
-    ax.set_title('Final Anomalies')
+    ax.set_xlabel('Actual (kW)')
+    ax.set_ylabel('Predicted (kW)')
+    ax.set_title('Anomaly Detection Model Output')
     ax.legend()
 
   # prints number of anomalies detected
@@ -113,8 +112,9 @@ class AnomalyDetection:
     ax.plot(consecutive_anomalies['DateTime'], consecutive_anomalies['Actual'], label='Actual')
     ax.plot(consecutive_anomalies['DateTime'], consecutive_anomalies['Predicted'], label='Predicted')
 
-    xticks = np.arange(consecutive_anomalies.index[0], consecutive_anomalies.index[len(consecutive_anomalies)-1], 2)
+    xticks = np.arange(consecutive_anomalies.index[0], consecutive_anomalies.index[len(consecutive_anomalies)-1], 1)
     ax.set_xticks(consecutive_anomalies['DateTime'][xticks])
+    ax.set_xticklabels(consecutive_anomalies['DateTime'][xticks].dt.strftime('%d %H:00'))
     ax.tick_params(axis='x', rotation=45)
 
     ax.set_xlabel('Hour')
@@ -128,7 +128,7 @@ class AnomalyDetection:
     max_diff_idx = int(differences.idxmax())
     prev_idx = int(max_diff_idx - differences.loc[max_diff_idx])
     total_days = (max_diff_idx - prev_idx) / 24
-    tick_interval = 48 if total_days > 7 else 24
+    tick_interval = int(max(24, 2 * total_days))
 
     if ax is None:
         plt.figure(figsize=(10, 6))
@@ -176,8 +176,8 @@ class AnomalyDetection:
     plt.xlabel('Day')
     plt.ylabel('Proportion of anomalies')
     plt.title('Anomaly Frequency by Day (normalized)')
-    plt.xticks(range(1, 32))  # Ensure days are labeled 1 to 31
-    plt.ylim(0, normalized_counts.max() + 0.05)  # Since it's a proportion
+    plt.xticks(range(1, 32))  
+    plt.ylim(0, normalized_counts.max() + 0.05) 
     plt.show()
 
   # plots anomaly frequency per hour
@@ -211,4 +211,20 @@ class AnomalyDetection:
     self.longest_nonanomalous_streak(ax=axes[1, 1])
 
     plt.tight_layout()
+    plt.show()
+
+  def avrg_abs_error_of_anomalies(self):
+    #print(f'Average absolute error of anomalies: {self.anomalies["Error"].abs().mean()}')
+    return self.anomalies["Error"].abs().mean()
+
+  def std_abs_error_of_anomalies(self):
+    #print(f'Standard deviation of errors: {self.anomalies["Error"].std()}')
+    return self.anomalies["Error"].std()
+
+  def plot_error_distribution_of_anomalies(self):
+    plt.figure(figsize=(10, 6))
+    sns.histplot(abs(self.anomalies['Error']), kde=True)
+    plt.xlabel('Error (kW)')
+    plt.ylabel('Frequency')
+    plt.title('Error distribution of anomalies')
     plt.show()
