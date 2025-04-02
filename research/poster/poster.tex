@@ -49,12 +49,12 @@
 
 % \title{Some fancy title: followed by some more text}
 % \title{Energy Anomaly Detection!}
-\title{Anomaly Detection with Smart Meters!}
+\title{Anomaly Detection for Smart Grids!}
 
 \author{Carlos Mefenya \and Tanmay Bishnoi \and Prateek Arora \and Aranan Thevendran \and Farhan Ahmed}
 
 % \institute[shortinst]{\inst{1} Some Institute \samelineand \inst{2} Another Institute}
-\institute[shortinst]{Toronto Metropolitan University}
+\institute[shortinst]{Department of Electrical Engineering, Toronto Metropolitan University}
 
 
 % ====================
@@ -70,7 +70,6 @@
 \footercontent{
   % \href{https://utfpr.edu.br/ct/ppgca}{utfpr.edu.br/ct/ppgca} \hfill
   Engineering Day 2025 \hfill
-  Department of Electrical, Computer, And Biomedical Engineering \hfill
   torontomu.ca/electrical-computer-biomedical/ \hfill
 
   % \href{mailto:ppgca-ct@utfpr.edu.br}{ppgca-ct@utfpr.edu.br}}
@@ -108,7 +107,7 @@
   \end{block}
 
   \begin{block}{Problem Statement}
-    In this project, our goal is to predict energy demand and detect anomalies in energy consumption habits of zones and cities in Ontario using advanced time series forecasting and anomaly detection methods to allow utilities and organizations to make informed decisions in real-time.
+    In this project, our goal is to \textbf{predict energy demand and detect anomalies in energy consumption habits} of zones and cities in Ontario using advanced time series forecasting and anomaly detection methods to allow utilities and organizations to make informed decisions in real-time.
 
     % \begin{enumerate}
     %   \item \textbf{Forecasting}: We use XGBoost to forecast daily energy demand based on historical consumption patterns and weather features.
@@ -185,11 +184,11 @@
   \subheading{Anomaly Detection Model}\\
   \begin{figure}
     \centering
-    \includegraphics[height=6.0cm]{figures/gmm.png}
-    \includegraphics[height=10.0cm]{figures/ad.png}
-    \caption{Anomaly Detection Model Output}
+    \includegraphics[height=8.5cm]{figures/gmm.png}
+    \includegraphics[height=8.5cm]{figures/ad.png}
+    \caption{Gaussian Mixture Model fit (left) and Anomaly Detection Model output (right)}
   \end{figure}
-  Our \textbf{Anomaly Detection (AD)} method is based on probability analysis and Gaussian Mixture Modelling. Gaussian Mixture Modelling is a soft clustering technique used in unsupervised learning to determine the probability that a given data point belongs to a cluster, or in this case, whether it is an anomaly.
+  Our \textbf{Anomaly Detection (AD)} method is based on statistical and probabilistic analysis of the error between the predicted and actual energy demand. We use \textbf{Gaussian Mixture Modelling (GMM)} with \textbf{Expectation-Maximization (EM)} algorithm for unsupervised latent state modelling to determine the likelihood that a given error value belongs to or falls outside of an expected distribution of error values.
 
   \subheading{Interactive Dashboard}\\
   The dashboard is a web/local application that allows the user to interact with the forecasting and anomaly detection models. The dashboard allow convenient training and inference of the models. Moreover, the user can bring their own data to train the model and test the results for anomalies.
@@ -200,36 +199,37 @@
       % \centering
       \includegraphics[height=4.0cm]{figures/xgboost-pred.png}
       \includegraphics[height=4.0cm]{figures/lstm-pred.png}
-      \caption{XBoost (top) and LSTM (bottom) Daily Energy Demand Predictions based on weather data.}
+      \caption{XGBoost (top) and LSTM (bottom) Daily Energy Demand Predictions based on Weather data (Toronto Zonal, 2018-2020)}
     \end{figure}
 
+    \vspace{-0.5cm}
+    We evaluated our models on multiple datasets from IESO, including both Zonal (aggregated) and Forward Sortation Area (FSA) level data. The models demonstrated strong performance across different geographical scales, with LSTM generally achieving better accuracy than XGBoost. % For anomaly detection, we found that using a 3-component GMM provided the best balance between sensitivity and specificity in identifying unusual consumption patterns.
 
+    \vspace{0.5cm}
     \begin{table}
       \centering
-
       \begin{tabular}{l r r r c}
         \toprule
-        \textbf{Models} & \textbf{Zonal (MAPE)} & \textbf{FSA (MAPE)} & \textbf{N (Datasets)} & \textbf{N (Anomalies)} \\
+        \textbf{Models} & \textbf{Zonal (MAPE)} & \textbf{FSA (MAPE)} & \textbf{N (Datasets)} \\%& \textbf{N (Anomalies)} \\
         \midrule
-        XGB &  8.825\% & 7.63\% & =5 & =10 \\
-        LSTM & 2.44\% & 4.80\% & =5 & =10 \\
+        XGBoost & 8.83\% & 7.63\% & =5\\% & =10 \\
+        LSTM & \textbf{2.44\%} & \textbf{4.80\%} & =5\\% & =10 \\
         \bottomrule
       \end{tabular}
       \caption{Model Performance Results on multiple datasets for 2018-2020 data (lower MAPE is better)}
 
     \end{table}
-    
 
   \end{block}
 
+  \vspace{-1.5cm}
   \begin{block}{Conclusion}
-  We were successful in predicting energy demand and detecting anomalies by training advanced machine learning models on a large dataset of energy demand and weather data. We were able to achieve an MAPE of 0.06 and 0.01 for XGBoost and LSTM respectively.
+  Our research demonstrates successful implementation of energy demand forecasting and anomaly detection using advanced machine learning models. The LSTM model achieved superior performance with MAPE of \textbf{2.44\%} on zonal data, while XGBoost showed robust results with \textbf{8.83\%} MAPE. With our interaactive dashboards, our work can contribute to efficient energy management by making these advanced tools more accessible.
 
   \end{block}
 
   \begin{block}{Acknowledgements}
-  We would like to thank our supervisor, Dr. Bala Venkatesh, for his guidance and support throughout this project. We would also like to thank Shima and Amir for their help and feedback.
-
+  We would like to thank our supervisor, \textbf{Dr. Bala Venkatesh}, for his support throughout this project. We would also like to thank \textbf{Shima B.Z. Homayie} and \textbf{Amir R.N. Ghadikolaei} for their help and feedback.
   \end{block}
 
 \end{column}
