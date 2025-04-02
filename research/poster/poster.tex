@@ -37,6 +37,12 @@
 
 \newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
 
+\newcommand{\subheading}[1]{%
+    \vspace{0.5em}%
+    {\large\bfseries #1}%
+    \vspace{0.3em}%
+}
+
 % ====================
 % Title
 % ====================
@@ -97,38 +103,63 @@
 
   \begin{block}{Introduction}
 
-  Energy forecasting and anomaly detection are critical components in the management of energy systems. Accurate energy forecasting allows utilities and organizations to predict energy demand and supply, enabling them to optimize resource allocation, reduce operational costs, and reduce carbon emissions.
+  Energy forecasting and anomaly detection are critical components in the management of energy systems such as smart grids. Accurate energy forecasting allows utilities and organizations to predict energy demand and supply, enabling them to optimize resource allocation, reduce operational costs, and reduce carbon emissions.
 
   \end{block}
 
   \begin{block}{Problem Statement}
-    In this project, our goal is to predict energy demand and detect anomalies in energy consumption habits of zones and cities in Ontario using advanced time series forecasting and anomaly detection methods to allow utilities and organizations to make informed decisions.
+    In this project, our goal is to predict energy demand and detect anomalies in energy consumption habits of zones and cities in Ontario using advanced time series forecasting and anomaly detection methods to allow utilities and organizations to make informed decisions in real-time.
+
+    % \begin{enumerate}
+    %   \item \textbf{Forecasting}: We use XGBoost to forecast daily energy demand based on historical consumption patterns and weather features.
+    %   \item \textbf{Anomaly Detection}: We use LSTM to detect anomalies in the energy demand data.
+    % \end{enumerate}
   \end{block}
 
 
   \begin{block}{Dataset}
-    \begin{figure}
-      \centering
-      \includegraphics[height=3.75cm]{logos/ieso.png}
-      \includegraphics[height=3.75cm]{logos/eccc.png}
-      % \caption{We use IESO's energy data and ECCC's weather data to predict energy demand.}
-    \end{figure}
+    % \begin{figure}
+    %   \centering
+    %   \includegraphics[height=3.75cm]{logos/ieso.png}
+    %   \includegraphics[height=3.75cm]{logos/eccc.png}
+    %   % \caption{We use IESO's energy data and ECCC's weather data to predict energy demand.}
+    % \end{figure}
 
-    We sourced our energy data from IESO's repository and predictor data from Climate Canada's weather repository (ECCC).
+    We build a combined dataset where the prediction target is \textbf{hourly energy demand} data for the zone/city and the predictors are \textbf{weather attibutes}. We use open-source APIs provided by IESO, and Climate Canada's weather repository (ECCC), respectively, to source our data.
 
-    \begin{figure}
+    \begin{table}
       \centering
-      \includegraphics[height=3.75cm]{figures/seasonality.png}
-      \caption{Seasonality of Daily energy consumption in Toronto (IESO, 2008-2023)}
-    \end{figure}
+      \begin{tabular}{l l r}
+        \toprule
+        \textbf{columns} & \textbf{Source}  & \textbf{description} \\
+        \midrule
+        Target & IESO & Hourly Energy Demand of Zone/City \\
+        Predictors & ECCC & Hourly Stn Pres, Humidity, Temp \\
+        \bottomrule
+      \end{tabular}
+      \caption{Hourly dataset description}
+  \end{table}
+  \vspace{-1.5cm}
+  \begin{figure}
+    \centering
+    \includegraphics[height=3.75cm]{figures/seasonality.png}
+    \caption{Seasonality of Daily energy consumption in Toronto (IESO, 2008-2023)}
+  \end{figure}
 
   \end{block}
 
   \begin{block}{Approach}
 
+    Our solution consists of 4 components: Dataset Builder API, Forecasting Models, an Anomaly Detection Model, and an Interactive Dashboard. The user can choose the entire dataset or a subset of it to build the dataset and train the model. The results are then visualized using the dashboard.
 
+    \begin{figure}
+      \centering
+      \includegraphics[height=10.0cm]{figures/system_arch.png}
+      \caption{Full System Architecture}
+    \end{figure}
 
-    XGBoost is a powerful and efficient machine learning algorithm based on gradient boosting. It builds an ensemble of decision trees to make accurate predictions and is widely used for structured/tabular data.
+    \subheading{Forecasting Models: XGBoost}\\
+    In this project, we leveraged \textbf{XGBoost (Extreme Gradient Boosting)} to forecast daily energy demand based on historical consumption patterns and weather features such as temperature and humidity. We chose XGBoost because it is a tree-based ensemble learning algorithm known for its speed and performance on structured data, as well as its interpretability. 
 
     \begin{figure}
       \centering
@@ -136,22 +167,6 @@
       \includegraphics[height=8.0cm]{figures/lstm.png}
       \caption{Model Architectures for XGBoost (left) and LSTM (right)}
     \end{figure}
-
-    % \begin{figure}
-    %   \centering
-    %   \includegraphics[height=11.0cm]{figures/xgboost.png}
-    %   \caption{XGBoost Model Architecture}
-    % \end{figure}
-
-
-    LSTM (Long Short-Term Memory) is a type of recurrent neural network (RNN) designed to capture long-range dependencies in sequential data. It's commonly used in tasks like time series forecasting, natural language processing, and speech recognition.
-
-    % \begin{figure}
-    %   \centering
-    %   \includegraphics[height=10.0cm]{figures/lstm.png}
-    %   \caption{LSTM Model Architecture}
-    % \end{figure}
-
 
   \end{block}
 
@@ -162,6 +177,22 @@
 \separatorcolumn
 \begin{column}{\colwidth}
 
+  \subheading{Forecasting Models: LSTM}\\
+  We also used \textbf{LSTM (Long Short-Term Memory)} for forecasting. LSTM is a type of recurrent neural network (RNN) designed to handle sequential data while addressing the vanishing gradient problem using memory cells and information gates. These mechanisms allow LSTMs to retain long-term dependencies, making them highly effective for time-series forecasting.
+
+
+
+  \subheading{Anomaly Detection Model}\\
+  \begin{figure}
+    \centering
+    \includegraphics[height=6.0cm]{figures/gmm.png}
+    \includegraphics[height=10.0cm]{figures/ad.png}
+    \caption{Anomaly Detection Model Output}
+  \end{figure}
+  Our \textbf{Anomaly Detection (AD)} method is based on probability analysis and Gaussian Mixture Modelling. Gaussian Mixture Modelling is a soft clustering technique used in unsupervised learning to determine the probability that a given data point belongs to a cluster, or in this case, whether it is an anomaly.
+
+  \subheading{Interactive Dashboard}\\
+  The dashboard is a web/local application that allows the user to interact with the forecasting and anomaly detection models. The dashboard allow convenient training and inference of the models. Moreover, the user can bring their own data to train the model and test the results for anomalies.
 
   \begin{block}{Results}
 
@@ -175,21 +206,19 @@
 
     \begin{table}
       \centering
-      \begin{tabular}{l r r c}
+
+      \begin{tabular}{l r r r c}
         \toprule
-        \textbf{First column} & \textbf{Second column} & \textbf{Third column} & \textbf{Fourth} \\
+        \textbf{Models} & \textbf{Zonal (MAPE)} & \textbf{FSA (MAPE)} & \textbf{N (Datasets)} & \textbf{N (Anomalies)} \\
         \midrule
-        Foo & 13.37 & 384,394 & $\alpha$ \\
-        Bar & 2.17 & 1,392 & $\beta$ \\
-        Baz & 3.14 & 83,742 & $\delta$ \\
-        Qux & 7.59 & 974 & $\gamma$ \\
+        XGB &  8.825\% & 7.63\% & =5 & =10 \\
+        LSTM & 2.44\% & 4.80\% & =5 & =10 \\
         \bottomrule
       \end{tabular}
-      \caption{A table caption.}
+      \caption{Model Performance Results on multiple datasets for 2018-2020 data (lower MAPE is better)}
+
     \end{table}
-
-
-
+    
 
   \end{block}
 
