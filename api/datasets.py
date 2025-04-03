@@ -847,3 +847,39 @@ class DatasetPreprocessor():
     dt = df.pop('DateTime')
 
     return target_name, df, dt
+
+  @staticmethod
+  def load_dataset_from_filepath(filepath: str = None)->tuple[str, pd.DataFrame, pd.DatetimeIndex]:
+    # Redundancy function
+    return DatasetPreprocessor.load_dataset(filepath)
+  
+  @staticmethod
+  def load_dataset_from_file(file: str = None)->tuple[str, pd.DataFrame, pd.DatetimeIndex]:
+
+
+    metadata = {}
+    lines = [line.decode('utf-8') if isinstance(line, bytes) else line for line in file.readlines()]
+        
+    data_start_idx = 0
+    for i, line in enumerate(lines):
+        if line.startswith('#'):
+            key_value = line[1:].strip().split(':', 1)
+            if len(key_value) == 2:
+                key, value = key_value
+                metadata[key.strip()] = value.strip()
+        else:
+            data_start_idx = i
+            break
+    
+    from io import StringIO
+    csv_data = ''.join(lines[data_start_idx:])
+    df = pd.read_csv(StringIO(csv_data))
+
+    target_name = metadata['target_name']
+    dt = df.pop('DateTime')
+
+    return target_name, df, dt
+
+def load_dataset_from_file(file):
+   # returns target_name, dataset, dt 
+   return DatasetPreprocessor.load_dataset_from_file(file)
