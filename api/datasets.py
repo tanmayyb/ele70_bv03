@@ -234,7 +234,7 @@ class IESODataset(Dataset):
       files.sort()
       years = years[:-1]
       files = files[:-1]
-      print(f"Available years: {min(years)} to {max(years)}")
+      print(f"Available Time range for IESO {self.dataset_type} dataset: {min(years)} to {max(years)}")
       
       available_files = files
       filetype = "csv"
