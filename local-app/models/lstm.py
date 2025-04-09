@@ -42,9 +42,10 @@ def lstm_train(X_train, X_test, y_train, y_test, dataset, dt, look_back=3):
     Y_test = scaler.inverse_transform(np.concatenate((Y_test.reshape(-1, 1), np.zeros((len(Y_test), len(data.columns) - 1))), axis=1))[:, 0]
 
 
-    tmp = pd.concat([dt[train_size + look_back + 1:][:len(test_predict)],
-                    y_test[:len(test_predict)],
-                    pd.Series(test_predict, index=y_test[:len(test_predict)].index, name='pred')],
-                    axis=1).dropna()
+    tmp = pd.concat([
+        dt[train_size + look_back + 1 : len(test_predict)],
+        y_test[:len(test_predict)],
+        pd.Series(
+            test_predict, index=y_test[:len(test_predict)].index, name='pred')], axis=1).dropna()
 
-    return tmp
+    return test_predict, tmp

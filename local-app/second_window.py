@@ -4,9 +4,21 @@ from tkinter import filedialog, messagebox
 import os
 import shutil
 import subprocess
+
+
+import sys
 import urllib.request
 import numpy as np
-import sys
+import pandas as pd
+
+
+# Added because GUI has no implementation for date selection
+HARDCODED_DATES = {
+    "fsa": ("202001", "202401"),
+    "zonal": ("2020", "2024"),
+}
+MODELS = {0:'', 1: "XGBoost", 2: "LSTM"}
+OUTPUT_DIR = './outputs'
 
 
 # load the datasets API
@@ -22,11 +34,7 @@ def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-# Added because GUI has no implementation for date selection
-HARDCODED_DATES = {
-    "fsa": ("202001", "202401"),
-    "zonal": ("2020", "2024"),
-}
+
 
 class TextRedirector:
     def __init__(self, text_widget):
@@ -197,34 +205,86 @@ class SecondWindow:
         (X_train, X_test, y_train, y_test), (train_idx, test_idx) = create_train_test_split(self.dataset, target=self.target_name, dt=self.dt)
         y_test_numpy = y_test.to_numpy()
 
-
         model_selected = self.model_var.get()
-        if model_selected == 1:
-            from models.xgboost import xgb_train
-            pred = xgb_train(X_train, y_train, X_test, y_test)
+        model_name = MODELS[model_selected]
 
-        elif model_selected == 2:
-            from models.lstm import lstm_train
-            pred = lstm_train(X_train, y_train, X_test, y_test, self.dataset, self.dt)
+        # notify on training start
+        self.evolution_text.insert(tk.END, f"Model selected: {model_name}\n")
+        self.evolution_text.insert(tk.END, f"Training...\n")
+        self.evolution_text.update()
+        try:
+            if model_selected == 1:
+                from models.xgboost import xgb_train
+                pred, output_df = xgb_train(X_train, y_train, X_test, y_test, self.dt)
 
+            elif model_selected == 2:
+                from models.lstm import lstm_train
+                pred, output_df = lstm_train(X_train, y_train, X_test, y_test, self.dataset, self.dt)
+            else:
+                raise ValueError(f"Invalid model selected: {model_selected}")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+        self.output_df = output_df
+
+        # update text on finishing training 
+        self.evolution_text.insert(tk.END, f"...Training complete!\n")
+        self.evolution_text.update()
+        self.evolution_text.see("end")
+
+        # calculate statistics
         mse = mean_squared_error(y_test, pred)
         mae = mean_absolute_error(y_test, pred)
         mape = mean_absolute_percentage_error(y_test, pred)
 
+        # update text on calculating statistics
+        self.evolution_text.insert(tk.END, f"Model Performance Statistics:\n")
+        self.evolution_text.insert(tk.END, f"MSE: {mse}\n")
+        self.evolution_text.insert(tk.END, f"MAE: {mae}\n")
+        self.evolution_text.insert(tk.END, f"MAPE: {mape}\n")
+        self.evolution_text.update()
+        self.evolution_text.see("end")
 
+
+        # plot prediction
+        from plotly import graph_objects as go
+        fig = go.Figure()
+        fig.add_trace(go.Scattergl(
+            x=test_idx,
+            y=y_test.to_numpy(),
+            name='Actual',
+            line_color='blue')
+        )
+        fig.add_trace(go.Scattergl(
+            x=test_idx,
+            y=pred,
+            name='Predicted',
+            line_color='red')
+        )
+        # Set the theme to 'plotly_white'
+        fig.update_layout(
+            title=f"Time Series Forecasting for {self.target_name} with {model_name}",
+            xaxis_title="t (1 unit = 1 hour)",
+            yaxis_title="Energy Demand",
+            template="plotly_white",
+            xaxis = dict( rangeslider=dict(
+            visible=True
+            ))
+        )
+        fig.show()
 
     def run_anomaly_detection(self):
-        script_path = r"C:\Users\OWNER\Desktop\CAPSTONE PROJECT\AccessFiles\offline\outputs\anomaly_detection.py"
-        self.evolution_text.insert(tk.END, "Starting anomaly detection...\n")
-        self.evolution_text.update()
-
         try:
-            process = subprocess.Popen(["python", script_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-            for line in process.stdout:
-                self.evolution_text.insert(tk.END, line)
-                self.evolution_text.see(tk.END)
-                self.evolution_text.update()
-            process.wait()
+            from models.anomaly_detection import AnomalyDetection
+            anomaly_detection = AnomalyDetection(self.output_df, self.target_name)
+
+            # plot the summary plots
+            anomaly_detection.summary_plots()
+            anomaly_detection.num_anomalies()
+            anomaly_detection.best_ten_anomalies()
+            anomaly_detection.worst_ten_anomalies()
+            anomaly_detection.anomalies_per_day()
+
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
 
