@@ -2,6 +2,7 @@ ipykernel
 ipywidgets
 plotly
 nbformat
+openpyxl
 matplotlib
 pandas
 tqdm
