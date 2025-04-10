@@ -38,3 +38,47 @@ With terminal (command prompt/powershell) open at a directory of your choice, ru
     pip install -r requirements.txt
     ```
 
+
+## Dataset Formatter
+
+```
+> python parse.py -h
+
+     ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐       
+     │                                                                                                                        │       
+     │          .sS$$$$$$$$$$$$$$Ss.                          `7MM"'"Yp, `7MMF'   `7MF'                                       │       
+     │         .$$$$$$$$$$$$$$$$$$$$$$s.                        MM    Yb   `MA     ,V                                         │       
+     │         $$$$$$$$$$$$$$$$$$$$$$$$S.                       MM    dP    VM:   ,V ,pP""Yq.   pd""b.                        │       
+     │         $$$$$$$$$$$$$$$$$$$$$$$$$$s.                     MM"'"bg.     MM.  M'6W'    `Wb (O)  `8b                       │       
+     │         S$$$$'        `$$$$$$$$$$$$$                     MM    `Y     `MM A' 8M      M8      ,89                       │       
+     │         `$$'            `$$$$$$$$$$$.                    MM    ,9      :MM;  YA.    ,A9    ""Yb.                       │       
+     │          :               `$$$$$$$$$$$                  .JMMmmmd9        VF    `Ybmmd9'        88                       │       
+     │         :                 `$$$$$$$$$$                                                   (O)  .M'                       │       
+     │      .====.  ,=====.       $$$$$$$$$$                                                    bmmmd'                        │       
+     │    .'      ~'       ".    s$$$$$$$$$$                                                                                  │       
+     │    :       :         :=_  $$$$$$$$$$$                                                                                  │       
+     │    `.  ()  :   ()    ' ~=$$$$$$$$$$$'                                                                                  │       
+     │      ~====~`.      .'    $$$$$$$$$$$                                                                                   │       
+     │       .'     ~====~     sS$$$$$$$$$'                                                                                   │       
+     │       :      .         $$$$$' $$$$                                                                                     │       
+     │     .sS$$$$$$$$Ss.     `$$'   $$$'                                                                                     │       
+     │    $$$$$$$$$$$$$$$s         s$$$$    `7MM"'"YMM                                           mm     mm                    │       
+     │    $SSSSSSSSSSSSSSS$        $$$$$      MM    `7                                           MM     MM                    │       
+     │         :                   $$$$'      MM   d  ,pW"Wq.`7Mb,od8 `7MMpMMMb.pMMMb.   ,6"Yb.mmMMmm mmMMmm .gP"Ya `7Mb,od8  │       
+     │          `.                 $$$'       MM""MM 6W'   `Wb MM' "'   MM    MM    MM  8)   MM  MM     MM  ,M'   Yb  MM' "'  │       
+     │            `.               :          MM   Y 8M     M8 MM       MM    MM    MM   ,pm9MM  MM     MM  8M""""""  MM      │       
+     │             :               :          MM     YA.   ,A9 MM       MM    MM    MM  8M   MM  MM     MM  YM.    ,  MM      │       
+     │             :              .'`.      .JMML.    `Ybmd9'.JMML.   .JMML  JMML  JMML.`Moo9^Yo.`Mbmo  `Mbmo`Mbmmd'.JMML.    │       
+     │            .'.           .'   :                                                                                        │       
+     │           : .$s.       .'    .'                                                                                        │       
+     │           :.S$$$S.   .'    .'                                                                                          │       
+     │           : $$$$$$`.'    .'                                                                                            │       
+     │              $$$$   `. .'                                                                                              │       
+     │                       `                                                                                                │       
+     │                                                                                                                        │       
+     │                                                                                                                        │       
+     └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘       
+
+> python parser.py --input_filepath "INPUT_FILE_Load_Forecasgin.xlsx" --output_filepath "my_cute_dataset.csv"
+```
+
