@@ -9,13 +9,20 @@ from prettytable import PrettyTable
 class AnomalyDetection:
 
   def __init__(self, model_df, target):
-    self.data = pd.DataFrame({'DateTime': model_df['DateTime'], 'Actual': model_df[target], 'Predicted': model_df['pred'], 'Error': model_df['error']})
+    self.data = pd.DataFrame({'DateTime': model_df['DateTime'], 'Actual': model_df[target], 'Predicted': model_df['pred']})
+
     self.data['DateTime'] = pd.to_datetime(self.data['DateTime'])
     self.target = target
-    self.errors = model_df['error']
     self.actual = self.data['Actual']
     self.predicted = self.data['Predicted']
-    self.anomalies = pd.DataFrame()
+
+    if ('error' not in list(model_df)):
+      self.data['error'] = self.data['Actual'] - self.data['Predicted']
+    else:
+      self.data['error'] = model_df['error']
+
+    self.errors = self.data['error']
+    self.anomalies = None
     self.statistical_detection()
     self.gmm()
 
@@ -176,8 +183,8 @@ class AnomalyDetection:
     plt.xlabel('Day')
     plt.ylabel('Proportion of anomalies')
     plt.title('Anomaly Frequency by Day (normalized)')
-    plt.xticks(range(1, 32))  
-    plt.ylim(0, normalized_counts.max() + 0.05) 
+    plt.xticks(range(1, 32))
+    plt.ylim(0, normalized_counts.max() + 0.05)
     plt.show()
 
   # plots anomaly frequency per hour
@@ -227,4 +234,12 @@ class AnomalyDetection:
     plt.xlabel('Error (kW)')
     plt.ylabel('Frequency')
     plt.title('Error distribution of anomalies')
+    plt.show()
+
+  def plot_error_distribution(self):
+    plt.figure(figsize=(10, 6))
+    sns.histplot(self.errors, kde=True)
+    plt.xlabel('Error (kW)')
+    plt.ylabel('Frequency')
+    plt.title('Error distribution')
     plt.show()
